@@ -1,5 +1,3 @@
-##TODO: Note - this is still in progress
-
 class Node():
     def __init__(self, data, next_=None):
         self.data = data
@@ -30,18 +28,24 @@ class LinkedList():
         """
         Returns second to last node. Used for double linked list inheritence.
         """
+        return self._add_last_inner(last_node, self.delete_node)
+
+    def _add_last_inner(self, last_node, delete_function):
         if self.head is None:
             self.add_first(last_node)
             return
 
         runner = self.head
         while runner.next is not None:
-            #TODO: Add check if we find node as we go. If so, remove and add to end
-            # We don't want the SAME node in multiple positions, but we can have multiple
-            # nodes with the same data.
+            runner_data = runner.data
             runner = runner.next
 
+            if runner_data == last_node.data: #If data is already in node, delete and add to end
+                delete_function(runner_data)
+
         runner.next = last_node
+        runner.next.next = None
+
         return runner
 
     def insert_after(self, prev_data, new_node):
@@ -112,17 +116,23 @@ class LinkedList():
 
         return prev_node, current_node
 
+    def clone(self):
+        if self.head is None:
+            return LinkedList()
 
+        clone_head = Node(self.head.data)
+        clone = LinkedList(clone_head)
 
+        current_node = self.head.next
+        prev_node = clone_head
 
+        while current_node is not None:
+            prev_node.next = Node(current_node.data)
 
+            current_node = current_node.next
+            prev_node = prev_node.next
 
-
-
-
-
-
-
+        return clone
 
 
 class DoublyNode(Node):
@@ -144,7 +154,7 @@ class DoublyLinkedList(LinkedList):
         """
         Returns second to last node for consistency with Linked List.
         """
-        second_last_node = super().add_last(last_node)
+        second_last_node = super()._add_last_inner(last_node, self.delete_node)
 
         last_node.prev = second_last_node
         return second_last_node
@@ -216,4 +226,27 @@ class DoublyLinkedList(LinkedList):
             return False
 
         current_node.prev.next = current_node.next
+
+        if current_node.next is not None:
+            current_node.next.prev = current_node.prev
+
         return True
+
+    def clone(self):
+        if self.head is None:
+            return DoublyLinkedList()
+
+        clone_head = DoublyNode(self.head.data)
+        clone = DoublyLinkedList(clone_head)
+
+        current_node = self.head.next
+        prev_node = clone_head
+
+        while current_node is not None:
+            prev_node.next = DoublyNode(current_node.data)
+            prev_node.next.prev = prev_node
+
+            current_node = current_node.next
+            prev_node = prev_node.next
+
+        return clone
